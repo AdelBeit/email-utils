@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "bulk-email-verifier": "^1.0.4",
+    "express": "^4.19.2",
+    "global": "^4.4.0"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "node api/index.js"
+  },
+  "name": "email-utils",
+  "version": "1.0.0",
+  "main": "api/index.js",
+  "repository": "https://github.com/AdelBeit/email-utils.git",
+  "author": "adele beitvashahi <adelbeit@gmail.com>",
+  "license": "MPL-2.0"
+}
