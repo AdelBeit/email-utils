@@ -1,3 +1,3 @@
 # Email Finder
 
-good for guessing emails and doing a quick & dirty verification.
+good for guessing emails and doing a quick & dirty validation.
