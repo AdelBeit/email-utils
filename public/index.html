@@ -5,231 +5,147 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Email Finder</title>
     <style>
+      :root {
+        color-scheme: light;
+      }
+      * {
+        box-sizing: border-box;
+      }
       body {
-        font-family: Arial, sans-serif;
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+        background: linear-gradient(180deg, #fefefe 0%, #f4f4f4 48%, #e8ebf0 100%);
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh;
-        margin: 0;
-        background-color: #f4f4f4;
       }
-      .container {
+      #app {
+        width: min(960px, 100%);
+        padding: 2rem 1.25rem;
+      }
+      .app-shell {
+        background: #fff;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 16px 35px rgba(15, 23, 42, 0.15);
+      }
+      h1 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        font-size: 2rem;
         text-align: center;
-        max-width: 100%;
-        width: 50%;
       }
-      #form {
-        max-width: 100%;
-        border: solid black 1px;
-        padding: 5px;
-      }
-      #outputs {
+      .form-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 0.75rem;
-        margin-top: 0.75rem;
+        margin-bottom: 1rem;
+      }
+      .form-grid input {
+        width: 100%;
+        padding: 0.65rem 0.7rem;
+        border-radius: 6px;
+        border: 1px solid #cbd5f5;
+        font-size: 0.95rem;
+      }
+      button {
+        font-size: 0.95rem;
+        border-radius: 8px;
+        border: none;
+        padding: 0.65rem 1rem;
+        cursor: pointer;
+      }
+      .primary {
+        width: 100%;
+        margin-top: 0.25rem;
+        background: #2563eb;
+        color: #fff;
+        font-weight: 600;
+        transition: transform 0.15s ease;
+      }
+      .primary:disabled {
+        background: #a5b4fc;
+        cursor: not-allowed;
+      }
+      .primary:focus-visible,
+      .inline-button:focus-visible,
+      button:focus-visible {
+        outline: 2px solid #2563eb;
+        outline-offset: 2px;
+      }
+      .primary:hover:not(:disabled) {
+        transform: translateY(-1px);
+      }
+      .outputs {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
       }
       .panel {
-        background-color: #fff;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        padding: 0.5rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 1rem;
+        border: 1px solid #e2e8f0;
+        display: flex;
+        flex-direction: column;
       }
-      .panel-title {
-        font-weight: bold;
+      .panel-title-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 0.5rem;
-        text-align: left;
+      }
+      .panel h2 {
+        font-size: 1rem;
+        margin: 0;
+      }
+      .badge {
+        font-size: 0.75rem;
+        background: #fbbf24;
+        color: #1f2937;
+        padding: 0.1rem 0.4rem;
+        border-radius: 999px;
+      }
+      .error {
+        background: #fee2e2;
+        border: 1px solid #fecdd3;
+        padding: 0.4rem 0.5rem;
+        border-radius: 6px;
+        color: #7f1d1d;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
       }
       pre {
-        white-space: pre-wrap;
-        overflow-wrap: break-word;
-        background-color: #f5f5f5;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-family: monospace;
-        text-align: left;
-        min-height: 3rem;
-        max-height: 240px;
-        overflow-y: auto;
-      }
-      #error {
-        color: #a00;
-        border-color: #d00;
-        background-color: #ffe8e8;
-        display: none;
-        margin-top: 0.5rem;
+        flex: 1;
+        margin: 0;
+        padding: 0.75rem;
+        border-radius: 8px;
+        background: #fff;
+        border: 1px solid #cbd5e1;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        overflow: auto;
+        min-height: 160px;
       }
       .inline-button {
-        margin-top: 0.5rem;
-        font-size: 0.9rem;
-        padding: 0.35rem 0.75rem;
-        border-radius: 4px;
-        border: 1px solid #999;
+        margin-top: 0.75rem;
+        align-self: flex-start;
+        padding: 0.55rem 0.9rem;
+        border: 1px solid #475569;
         background: #fff;
-        cursor: pointer;
+        border-radius: 6px;
+        color: #0f172a;
+        font-weight: 600;
+      }
+      .inline-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <h1>Email Finder</h1>
-      <div id="form">
-        <form>
-          <input type="text" required id="first" placeholder="first name" />
-          <input type="text" required id="last" placeholder="last name" />
-          <input type="text" required id="domain" placeholder="domain.com" />
-          <button type="button" id="submit" onclick="findEmail()">Find</button>
-        </form>
-        <div id="outputs">
-          <div class="panel">
-            <div class="panel-title">Verified results</div>
-            <pre id="result"></pre>
-            <div id="error" role="alert" aria-live="polite"></div>
-            <button class="inline-button" onclick="copyVerified()" type="button">
-              Copy verified list
-            </button>
-          </div>
-          <div class="panel">
-            <div class="panel-title">Generated emails</div>
-            <pre id="generated"></pre>
-            <button class="inline-button" onclick="copyGenerated()" type="button">
-              Copy generated list
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <script>
-      var verifiedClipboard = "";
-      var generatedClipboard = "";
-      const resultEl = document.getElementById("result");
-      const errorEl = document.getElementById("error");
-      const generatedEl = document.getElementById("generated");
-
-      function setError(message) {
-        if (message) {
-          errorEl.textContent = message;
-          errorEl.style.display = "block";
-        } else {
-          errorEl.textContent = "";
-          errorEl.style.display = "none";
-        }
-      }
-
-      function renderGenerated(list) {
-        const displayText = list && list.length ? list.join("\n") : "No generated addresses yet.";
-        generatedClipboard = list && list.length ? list.join(",") : "";
-        generatedEl.textContent = displayText;
-      }
-
-      function findEmail() {
-        const first = document.getElementById("first").value;
-        const last = document.getElementById("last").value;
-        const domain = document.getElementById("domain").value;
-        resultEl.textContent = "loading...";
-        setError("");
-        renderGenerated([]);
-        fetch("/find-emails", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            firstName: first,
-            lastName: last,
-            domain: domain,
-          }),
-        })
-          .then(async (response) => {
-            const data = await response.json();
-            if (!response.ok) {
-              throw {
-                message: data.error || "Unable to fetch emails",
-                detail: data.e,
-                generated: data.generated ?? [],
-              };
-            }
-            return data;
-          })
-          .then((data) => {
-            console.log(data);
-            const verifiedList = data.verified ?? [];
-            const generatedList = data.generated ?? [];
-            renderGenerated(generatedList);
-            if (verifiedList.length) {
-              verifiedClipboard = verifiedList.join(",");
-              resultEl.innerHTML = "verified list: " + verifiedClipboard;
-              return verifiedClipboard;
-            }
-            verifiedClipboard = "";
-            resultEl.textContent = "No verified addresses returned.";
-            return "";
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-            verifiedClipboard = "";
-            const message =
-              error?.message || "Something went wrong during verification";
-            const detail = error?.detail ? ` (${error.detail})` : "";
-            const generatedList = error?.generated ?? [];
-            renderGenerated(generatedList);
-            resultEl.textContent = message;
-            setError(message + detail);
-          });
-      }
-
-      async function copyVerified() {
-        if (!verifiedClipboard) {
-          return;
-        }
-        try {
-          await navigator.clipboard.writeText(verifiedClipboard);
-          console.log("Verified list copied to clipboard");
-        } catch (err) {
-          console.error("Failed to copy verified list: ", err);
-        }
-      }
-
-      async function copyGenerated() {
-        if (!generatedClipboard) {
-          return;
-        }
-        try {
-          await navigator.clipboard.writeText(generatedClipboard);
-          console.log("Generated list copied to clipboard");
-        } catch (err) {
-          console.error("Failed to copy generated list: ", err);
-        }
-      }
-      renderGenerated([]);
-    </script>
-    <script>
-      const elements = document.querySelectorAll("#first, #last, #domain, #submit");
-      elements[0].setAttribute("tabindex", "0");
-      for (let i = 1; i < elements.length; i++) {
-        elements[i].setAttribute("tabindex", "-1");
-      }
-      function rotateTabIndex() {
-        let currentElement = Array.from(elements).find(
-          (el) => el.getAttribute("tabindex") === "0"
-        );
-        let currentIndex = Array.from(elements).indexOf(currentElement);
-        currentElement.setAttribute("tabindex", "-1");
-        let nextIndex = (currentIndex + 1) % elements.length;
-        elements[nextIndex].setAttribute("tabindex", "0");
-        elements[nextIndex].focus();
-      }
-      elements.forEach((element) => {
-        element.addEventListener("keydown", (event) => {
-          if (event.key === "Tab") {
-            event.preventDefault();
-            rotateTabIndex();
-          }
-        });
-      });
-    </script>
+    <div id="app"></div>
+    <script type="module" src="/src/app.js"></script>
   </body>
 </html>

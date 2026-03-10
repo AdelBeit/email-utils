@@ -2,7 +2,8 @@
   "dependencies": {
     "bulk-email-verifier": "^1.0.4",
     "express": "^4.19.2",
-    "global": "^4.4.0"
+    "global": "^4.4.0",
+    "preact": "^10.29.0"
   },
   "type": "module",
   "scripts": {

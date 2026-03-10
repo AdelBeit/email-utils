@@ -4,6 +4,7 @@ import { generateEmails, bulkverification } from "../lib/emailfinder.js";
 const app = express();
 
 app.use(express.static("public"));
+app.use("/modules", express.static("node_modules"));
 app.use(express.json());
 
 app.post("/find-emails", async (req, res) => {
