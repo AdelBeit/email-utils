@@ -4,6 +4,29 @@ import EmailForm from "./components/EmailForm.js";
 import ResultPanel from "./components/ResultPanel.js";
 import GeneratedPanel from "./components/GeneratedPanel.js";
 
+const formatErrorMessage = (message) => {
+  if (!message) return "";
+  const braceIndex = message.indexOf("{");
+  if (braceIndex === -1) return message;
+  const prefix = message.slice(0, braceIndex).trim();
+  const rawJsonPart = message.slice(braceIndex);
+  const endBraceIndex = rawJsonPart.lastIndexOf("}");
+  const jsonCandidate =
+    endBraceIndex !== -1
+      ? rawJsonPart.slice(0, endBraceIndex + 1)
+      : rawJsonPart;
+  try {
+    const parsed = JSON.parse(jsonCandidate);
+    const formattedJson = JSON.stringify(parsed, null, 2);
+    const suffix = endBraceIndex !== -1 ? rawJsonPart.slice(endBraceIndex + 1) : "";
+    return prefix
+      ? `${prefix}\n${formattedJson}${suffix}`
+      : `${formattedJson}${suffix}`;
+  } catch (err) {
+    return message;
+  }
+};
+
 const App = () => {
   const [verified, setVerified] = useState([]);
   const [generated, setGenerated] = useState([]);
@@ -47,7 +70,7 @@ const App = () => {
       }
       setVerified(verifyData.verified ?? []);
     } catch (err) {
-      setError(err?.message || "Something went wrong");
+      setError(formatErrorMessage(err?.message || "Something went wrong"));
     } finally {
       setLoading(false);
     }
