@@ -20,6 +20,28 @@ app.post("/find-emails", async (req, res) => {
   }
 });
 
-app.listen(3001, ()=>console.log('listening on 3001'));
+const DEFAULT_PORT = parseInt(process.env.PORT, 10) || 3001;
+const MAX_PORT_ATTEMPTS = 15;
+
+const startServer = (port, attemptsLeft) => {
+  const server = app.listen(port, () => console.log(`listening on ${port}`));
+
+  server.on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+      console.warn(`port ${port} already in use`);
+      if (attemptsLeft > 0) {
+        startServer(port + 1, attemptsLeft - 1);
+      } else {
+        console.error("no available ports found after repeated attempts");
+        process.exit(1);
+      }
+    } else {
+      console.error("unexpected server error", err);
+      process.exit(1);
+    }
+  });
+};
+
+startServer(DEFAULT_PORT, MAX_PORT_ATTEMPTS);
 
 export default app;
