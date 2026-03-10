@@ -7,18 +7,25 @@ app.use(express.static("public"));
 app.use("/modules", express.static("node_modules"));
 app.use(express.json());
 
-app.post("/find-emails", async (req, res) => {
+app.post("/generate", (req, res) => {
   const { firstName, lastName, domain } = req.body;
   const generated = generateEmails(firstName, lastName, domain).split(",");
+  res.json({ generated });
+});
+
+app.post("/find-emails", async (req, res) => {
+  const { firstName, lastName, domain, generated } = req.body;
+  const generatedList = Array.isArray(generated)
+    ? generated
+    : generateEmails(firstName, lastName, domain).split(",");
   try {
-    let verified = await bulkverification(generated, domain);
-    res.json({ verified, generated });
+    let verified = await bulkverification(generatedList, domain);
+    res.json({ verified });
   } catch (e) {
     console.log(e);
     res.status(400).json({
       error: "there was a problem",
       e: e,
-      generated,
     });
   }
 });

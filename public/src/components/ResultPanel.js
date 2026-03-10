@@ -1,6 +1,6 @@
 import { h } from "/modules/preact/dist/preact.mjs";
 
-const ResultPanel = ({ verified, error, loading, onCopy }) => {
+const ResultPanel = ({ verified, error, loading, onCopy, copyLabel }) => {
   const hasVerified = verified && verified.length > 0;
   const listing = loading
     ? "Looking up verified addresses..."
@@ -29,7 +29,7 @@ const ResultPanel = ({ verified, error, loading, onCopy }) => {
     h(
       "button",
       { class: "inline-button", disabled: !hasVerified, onClick: onCopy },
-      "Copy verified list"
+      copyLabel || "Copy verified list"
     )
   );
 };

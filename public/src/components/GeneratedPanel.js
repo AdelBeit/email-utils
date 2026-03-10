@@ -1,6 +1,6 @@
 import { h } from "/modules/preact/dist/preact.mjs";
 
-const GeneratedPanel = ({ generated, onCopy }) => {
+const GeneratedPanel = ({ generated, onCopy, copyLabel }) => {
   const hasGenerated = generated && generated.length > 0;
   const message = hasGenerated
     ? generated.join("\n")
@@ -18,7 +18,7 @@ const GeneratedPanel = ({ generated, onCopy }) => {
     h(
       "button",
       { class: "inline-button", disabled: !hasGenerated, onClick: onCopy },
-      "Copy generated list"
+      copyLabel || "Copy generated list"
     )
   );
 };

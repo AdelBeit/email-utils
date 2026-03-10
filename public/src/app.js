@@ -9,6 +9,8 @@ const App = () => {
   const [generated, setGenerated] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [copyingVerified, setCopyingVerified] = useState(false);
+  const [copyingGenerated, setCopyingGenerated] = useState(false);
 
   const handleSubmit = async (payload) => {
     setLoading(true);
@@ -16,22 +18,34 @@ const App = () => {
     setVerified([]);
     setGenerated([]);
     try {
-      const response = await fetch("/find-emails", {
+      const generateResponse = await fetch("/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const data = await response.json();
-      const generatedList = data.generated ?? [];
+      const generateData = await generateResponse.json();
+      const generatedList = generateData.generated ?? [];
       setGenerated(generatedList);
-      if (!response.ok) {
-        const detail = data.e ? ` (${data.e})` : "";
-        const message = [data.error || "Unable to fetch emails", detail]
+      if (!generateResponse.ok) {
+        throw new Error(generateData.error || "Unable to generate emails");
+      }
+      const verifyResponse = await fetch("/find-emails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...payload,
+          generated: generatedList,
+        }),
+      });
+      const verifyData = await verifyResponse.json();
+      if (!verifyResponse.ok) {
+        const detail = verifyData.e ? ` (${verifyData.e})` : "";
+        const message = [verifyData.error || "Unable to fetch emails", detail]
           .filter(Boolean)
           .join(" ");
         throw new Error(message);
       }
-      setVerified(data.verified ?? []);
+      setVerified(verifyData.verified ?? []);
     } catch (err) {
       setError(err?.message || "Something went wrong");
     } finally {
@@ -39,12 +53,15 @@ const App = () => {
     }
   };
 
-  const copyList = async (list) => {
+  const copyList = async (list, onCopied) => {
     if (!list || !list.length) {
       return;
     }
     try {
       await navigator.clipboard.writeText(list.join(","));
+      if (typeof onCopied === "function") {
+        onCopied();
+      }
     } catch (copyError) {
       console.error("Copy failed", copyError);
     }
@@ -62,11 +79,21 @@ const App = () => {
         verified,
         error,
         loading,
-        onCopy: () => copyList(verified),
+        copyLabel: copyingVerified ? "Copied!" : "Copy verified list",
+        onCopy: () =>
+          copyList(verified, () => {
+            setCopyingVerified(true);
+            setTimeout(() => setCopyingVerified(false), 1100);
+          }),
       }),
       h(GeneratedPanel, {
         generated,
-        onCopy: () => copyList(generated),
+        copyLabel: copyingGenerated ? "Copied!" : "Copy generated list",
+        onCopy: () =>
+          copyList(generated, () => {
+            setCopyingGenerated(true);
+            setTimeout(() => setCopyingGenerated(false), 1100);
+          }),
       })
     )
   );
