@@ -120,9 +120,9 @@
       }
 
       function renderGenerated(list) {
-        const text = list && list.length ? list.join("\n") : "No generated addresses yet.";
-        generatedClipboard = list && list.length ? text : "";
-        generatedEl.textContent = text;
+        const displayText = list && list.length ? list.join("\n") : "No generated addresses yet.";
+        generatedClipboard = list && list.length ? list.join(",") : "";
+        generatedEl.textContent = displayText;
       }
 
       function findEmail() {
