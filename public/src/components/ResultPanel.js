@@ -19,16 +19,16 @@ const ResultPanel = ({ verified, error, loading, onCopy, copyLabel }) => {
       h("h2", null, "Verified results"),
       loading && h("span", { class: "badge" }, "Loading")
     ),
+    error &&
+      h(
+        "div",
+        { class: "error", role: "alert", "aria-live": "polite" },
+        error
+      ),
     h(
       "div",
       { class: "pre-wrapper" },
-      h("pre", null, listing),
-      error &&
-        h(
-          "div",
-          { class: "error", role: "alert", "aria-live": "polite" },
-          error
-        )
+      h("pre", null, listing)
     ),
     h(
       "button",
