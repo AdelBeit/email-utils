@@ -8,15 +8,17 @@ app.use(express.json());
 
 app.post("/find-emails", async (req, res) => {
   const { firstName, lastName, domain } = req.body;
+  const generated = generateEmails(firstName, lastName, domain).split(",");
   try {
-    let emails = await bulkverification(
-      generateEmails(firstName, lastName, domain).split(","),
-      domain
-    );
-    res.json({ emails });
+    let verified = await bulkverification(generated, domain);
+    res.json({ verified, generated });
   } catch (e) {
     console.log(e);
-    res.status(400).json({ error: "there was a problem", e: e });
+    res.status(400).json({
+      error: "there was a problem",
+      e: e,
+      generated,
+    });
   }
 });
 

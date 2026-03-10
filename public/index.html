@@ -24,8 +24,25 @@
         border: solid black 1px;
         padding: 5px;
       }
-      #result,
-      #error {
+      #outputs {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+      }
+      .panel {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+      }
+      .panel-title {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        text-align: left;
+      }
+      pre {
         white-space: pre-wrap;
         overflow-wrap: break-word;
         background-color: #f5f5f5;
@@ -34,13 +51,16 @@
         border-radius: 4px;
         font-family: monospace;
         text-align: left;
-        margin-top: 0.5rem;
+        min-height: 3rem;
+        max-height: 240px;
+        overflow-y: auto;
       }
       #error {
         color: #a00;
         border-color: #d00;
         background-color: #ffe8e8;
         display: none;
+        margin-top: 0.5rem;
       }
     </style>
   </head>
@@ -54,15 +74,25 @@
           <input type="text" required id="domain" placeholder="domain.com" />
           <button type="button" id="submit" onclick="findEmail()">Find</button>
         </form>
-        <pre id="result"></pre>
-        <div id="error" role="alert" aria-live="polite"></div>
+        <div id="outputs">
+          <div class="panel">
+            <div class="panel-title">Verified results</div>
+            <pre id="result"></pre>
+            <div id="error" role="alert" aria-live="polite"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Generated emails</div>
+            <pre id="generated"></pre>
+          </div>
+        </div>
         <button onclick="copyToClipboard()" type="button">Copy Emails</button>
       </div>
     </div>
     <script>
-      var emails;
+      var verifiedClipboard = "";
       const resultEl = document.getElementById("result");
       const errorEl = document.getElementById("error");
+      const generatedEl = document.getElementById("generated");
 
       function setError(message) {
         if (message) {
@@ -74,12 +104,18 @@
         }
       }
 
+      function renderGenerated(list) {
+        generatedEl.textContent =
+          list && list.length ? list.join("\n") : "No generated addresses yet.";
+      }
+
       function findEmail() {
         const first = document.getElementById("first").value;
         const last = document.getElementById("last").value;
         const domain = document.getElementById("domain").value;
         resultEl.textContent = "loading...";
         setError("");
+        renderGenerated([]);
         fetch("/find-emails", {
           method: "POST",
           headers: {
@@ -97,39 +133,53 @@
               throw {
                 message: data.error || "Unable to fetch emails",
                 detail: data.e,
+                generated: data.generated ?? [],
               };
             }
             return data;
           })
           .then((data) => {
             console.log(data);
-            emails = data.emails.join(",");
-            resultEl.innerHTML = "verified list: " + emails;
-            return emails;
+            const verifiedList = data.verified ?? [];
+            const generatedList = data.generated ?? [];
+            renderGenerated(generatedList);
+            if (verifiedList.length) {
+              verifiedClipboard = verifiedList.join(",");
+              resultEl.innerHTML = "verified list: " + verifiedClipboard;
+              return verifiedClipboard;
+            }
+            verifiedClipboard = "";
+            resultEl.textContent = "No verified addresses returned.";
+            return "";
           })
-          .then((emails) => navigator.clipboard.writeText(emails))
+          .then((emails) =>
+            emails && navigator.clipboard.writeText(emails)
+          )
           .catch((error) => {
             console.error("Error:", error);
-            emails = "";
+            verifiedClipboard = "";
             const message =
               error?.message || "Something went wrong during verification";
             const detail = error?.detail ? ` (${error.detail})` : "";
+            const generatedList = error?.generated ?? [];
+            renderGenerated(generatedList);
             resultEl.textContent = message;
             setError(message + detail);
           });
       }
 
       async function copyToClipboard() {
-        if (!emails) {
+        if (!verifiedClipboard) {
           return;
         }
         try {
-          await navigator.clipboard.writeText(emails);
+          await navigator.clipboard.writeText(verifiedClipboard);
           console.log("Content copied to clipboard");
         } catch (err) {
           console.error("Failed to copy: ", err);
         }
       }
+      renderGenerated([]);
     </script>
     <script>
       const elements = document.querySelectorAll("#first, #last, #domain, #submit");
